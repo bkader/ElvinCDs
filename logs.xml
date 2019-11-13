@@ -1,0 +1,81 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<Script file="logs.lua" />
+
+	<Button name="ElvinCDs_LogsButton" parent="$parent" virtual="true">
+		<Size x="100" y="16" />
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString name="$parentTime" inherits="GameFontHighlight" justifyH="RIGHT" justifyV="MIDDLE" text="Time">
+					<Size x="40" y="5" />
+					<Anchors><Anchor point="LEFT" x="3" y="0" /></Anchors>
+				</FontString>
+				<FontString name="$parentName" inherits="GameFontNormal" justifyH="LEFT" justifyV="MIDDLE" text="NAME">
+					<Size x="80" y="5" />
+					<Anchors>
+						<Anchor point="LEFT" relativeTo="$parentTime" relativePoint="RIGHT" x="5" y="0" />
+						<Anchor point="RIGHT" x="-3" y="0" />
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<HighlightTexture>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativePoint="TOPLEFT" />
+				<Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMRIGHT" />
+			</Anchors>
+			<Color r="1" g="0.8" b="0" a="0.1" />
+		</HighlightTexture>
+	</Button>
+
+	<Frame name="ElvinCDs_Logs" parent="UIParent" movable="true" enableMouse="true" clampedToScreen="true" frameStrata="HIGH" toplevel="true" hidden="true">
+		<Size><AbsDimension x="240" y="150" /></Size>
+		<Anchors><Anchor point="CENTER" /></Anchors>
+		<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+			<TileSize><AbsValue val="8" /></TileSize>
+			<EdgeSize><AbsValue val="8" /></EdgeSize>
+			<BackgroundInsets>
+				<AbsInset left="3" right="3" top="2" bottom="3" />
+			</BackgroundInsets>
+		</Backdrop>
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString name="$parentTitle" inherits="GameFontNormal" justifyH="LEFT" justifyV="MIDDLE" text="Spell Log">
+					<Size x="100" y="5" />
+					<Anchors>
+						<Anchor point="TOPLEFT" x="15" y="-15" />
+						<Anchor point="RIGHT" x="-35" y="0" />
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Button name="$parentCloseButton" inherits="UIPanelCloseButton">
+				<Anchors><Anchor point="TOPRIGHT" x="-1" y="-2" /></Anchors>
+			</Button>
+			<Frame name="$parentList">
+				<Size x="100" y="100" />
+				<Anchors>
+					<Anchor point="TOPLEFT" x="1" y="-35" />
+					<Anchor point="BOTTOMRIGHT" x="-1" y="1" />
+				</Anchors>
+				<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
+					<TileSize><AbsValue val="16" /></TileSize>
+					<EdgeSize><AbsValue val="16" /></EdgeSize>
+				</Backdrop>
+				<Frames>
+					<ScrollFrame name="$parentScrollFrame" inherits="ElvinCDs_ScrolLFrameTemplate">
+						<Anchors>
+							<Anchor point="TOPLEFT" x="4" y="-5" />
+							<Anchor point="BOTTOMRIGHT" x="-28" y="5" />
+						</Anchors>
+					</ScrollFrame>
+				</Frames>
+			</Frame>
+		</Frames>
+		<Scripts>
+			<OnLoad>ElvinCDs.Logs:onLoad(self)</OnLoad>
+			<OnDragStart>self:StartMoving()</OnDragStart>
+			<OnDragStop>self:StopMovingOrSizing()</OnDragStop>
+		</Scripts>
+	</Frame>
+</Ui>

@@ -1,0 +1,713 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<Script file="config.lua" />
+
+	<!-- Config CheckButton -->
+	<CheckButton name="ElvinCDs_Config_CheckButton" inherits="SendMailRadioButtonTemplate" virtual="true">
+		<Size>
+			<AbsDimension x="20" y="20" />
+		</Size>
+		<Scripts><OnClick>ElvinCDs.Config.General:onClick(self)</OnClick></Scripts>
+	</CheckButton>
+
+	<!-- Config FontString -->
+	<FontString name="ElvinCDs_Config_FontString" inherits="GameFontNormal" justifyH="LEFT" justifyV="TOP" virtual="true">
+		<Size>
+			<AbsDimension x="185" y="5" />
+		</Size>
+	</FontString>
+
+	<FontString name="ElvinCDs_Config_HelpFontString" inherits="GameFontHighlightSmall" justifyH="LEFT" justifyV="TOP" virtual="true" wordwrap="true">
+		<Size>
+			<AbsDimension x="185" y="0" />
+		</Size>
+	</FontString>
+
+	<!-- Spells Check Buttons -->
+	<CheckButton name="ElvinCDs_SpellsCheckButoon" inherits="SendMailRadioButtonTemplate" virtual="true">
+		<Size x="18" y="18" />
+		<Scripts>
+			<OnEnter>
+				local parent = self:GetParent();
+				parent.hovered = true;
+				parent:LockHighlight();
+			</OnEnter>
+			<OnLeave>
+				local parent = self:GetParent();
+				parent.hovered = false;
+				parent:UnlockHighlight();
+			</OnLeave>
+		</Scripts>
+		<Anchors>
+			<Anchor point="LEFT" relativeTo="$parentSpellName" relativePoint="RIGHT" x="65" y="0" />
+		</Anchors>
+	</CheckButton>
+
+	<!-- Spell Button Template (For List) -->
+	<Button name="ElvinCDs_SpellButton" virtual="true">
+		<Size x="100" y="20" />
+		<Anchors>
+			<Anchor point="LEFT" x="5" y="0" />
+			<Anchor point="RIGHT" x="5" y="0" />
+		</Anchors>
+		<Frames>
+			<Button name="$parentSpellName" text="Spell Name">
+				<NormalFont style="GameFontNormalSmall" />
+				<Size x="120" y="20" />
+				<Anchors>
+					<Anchor point="TOPLEFT" x="50" y="0" />
+				</Anchors>
+				<ButtonText name="$parentText" justifyH="LEFT">
+					<Anchors>
+						<Anchor point="LEFT" x="5" y="0" />
+						<Anchor point="RIGHT" x="-5" y="0" />
+					</Anchors>
+				</ButtonText>
+			</Button>
+			<CheckButton name="$parentDisplay" inherits="ElvinCDs_SpellsCheckButoon">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentSpellName" relativePoint="RIGHT" x="62" y="0" />
+				</Anchors>
+				<Scripts><OnClick>ElvinCDs.Config.Spells:change(self, "show")</OnClick></Scripts>
+			</CheckButton>
+			<CheckButton name="$parentTrack" inherits="ElvinCDs_SpellsCheckButoon">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentDisplay" relativePoint="RIGHT" x="20" y="0" />
+				</Anchors>
+				<Scripts><OnClick>ElvinCDs.Config.Spells:change(self, "track")</OnClick></Scripts>
+			</CheckButton>
+			<CheckButton name="$parentGroup" inherits="ElvinCDs_SpellsCheckButoon">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentTrack" relativePoint="RIGHT" x="20" y="0" />
+				</Anchors>
+				<Scripts><OnClick>ElvinCDs.Config.Spells:change(self, "group")</OnClick></Scripts>
+			</CheckButton>
+			<CheckButton name="$parentShout" inherits="ElvinCDs_SpellsCheckButoon">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentGroup" relativePoint="RIGHT" x="25" y="0" />
+				</Anchors>
+				<Scripts><OnClick>ElvinCDs.Config.Spells:change(self, "shout")</OnClick></Scripts>
+			</CheckButton>
+			<CheckButton name="$parentWhisper" inherits="ElvinCDs_SpellsCheckButoon">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentShout" relativePoint="RIGHT" x="25" y="0" />
+				</Anchors>
+				<Scripts><OnClick>ElvinCDs.Config.Spells:change(self, "shout")</OnClick></Scripts>
+			</CheckButton>
+			<CheckButton name="$parentSpecial" inherits="ElvinCDs_SpellsCheckButoon">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentWhisper" relativePoint="RIGHT" x="25" y="0" />
+				</Anchors>
+				<Scripts><OnClick>ElvinCDs.Config.Spells:change(self, "talent")</OnClick></Scripts>
+			</CheckButton>
+		</Frames>
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString name="$parentSpellId" inherits="GameFontHighlightSmall" justifyH="LEFT" text="Spell ID">
+					<Size x="45" y="5" />
+					<Anchors>
+						<Anchor point="LEFT" x="5" y="0" />
+					</Anchors>
+				</FontString>
+				<FontString name="$parentCooldown" inherits="GameFontHighlightSmall" justifyH="RIGHT" text="Cooldown">
+					<Size x="55" y="5" />
+					<Anchors>
+						<Anchor point="LEFT" x="155" y="0" />
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<HighlightTexture>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativePoint="TOPLEFT" />
+				<Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMRIGHT" />
+			</Anchors>
+			<Color r="1" g="0.8" b="0" a="0.1" />
+		</HighlightTexture>
+		<Scripts><OnClick>ElvinCDs.Config.Spells:onClick(self)</OnClick></Scripts>
+	</Button>
+
+	<Frame name="ElvinCDs_Config" toplevel="true" frameStrata="DIALOG" movable="true" enableMouse="true" parent="UIParent" clampedToScreen="true" hidden="true">
+		<Size>
+			<AbsDimension x="520" y="325" />
+		</Size>
+		<Anchors>
+			<Anchor point="CENTER">
+				<Offset>
+					<AbsDimension x="-200" y="200" />
+				</Offset>
+			</Anchor>
+		</Anchors>
+		<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background-Dark" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+			<BackgroundInsets>
+				<AbsInset left="11" right="12" top="12" bottom="11" />
+			</BackgroundInsets>
+			<TileSize>
+				<AbsValue val="32" />
+			</TileSize>
+			<EdgeSize>
+				<AbsValue val="32" />
+			</EdgeSize>
+		</Backdrop>
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture name="$parentTitleBG" file="Interface\DialogFrame\UI-DialogBox-Header">
+					<Size>
+						<AbsDimension x="356" y="64" />
+					</Size>
+					<Anchors>
+						<Anchor point="TOP">
+							<Offset>
+								<AbsDimension x="0" y="12" />
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</Texture>
+				<FontString name="$parentTitle" inherits="GameFontNormal" text="|cffff7d0aElvin|r |cff33ff99Cooldowns|r">
+					<Anchors>
+						<Anchor point="TOP" relativeTo="$parentTitleBG">
+							<Offset>
+								<AbsDimension x="0" y="-14" />
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<!-- General Options Frame -->
+			<Frame name="ElvinCDs_Config_General" hidden="false">
+				<Anchors>
+					<Anchor point="TOPLEFT" />
+					<Anchor point="BOTTOMRIGHT" />
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_EnabledStr" inherits="ElvinCDs_Config_FontString" text="Enable AddOn">
+							<Anchors>
+								<Anchor point="TOPLEFT" x="50" y="-28" />
+								<Anchors point="RIGHT" x="-265" />
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_EnabledHelp" inherits="ElvinCDs_Config_HelpFontString" text="Whether to enable cooldowns tracking">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_EnabledStr" relativePoint="BOTTOMLEFT" x="0" y="-5" />
+								<Anchors point="RIGHT" x="-265" />
+							</Anchors>
+						</FontString>
+
+						<FontString name="$parent_IconsStr" inherits="ElvinCDs_Config_FontString" text="Display Icons">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_EnabledHelp" relativePoint="BOTTOMLEFT" x="0" y="-6" />
+								<Anchors point="RIGHT" x="-265" />
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_IconsHelp" inherits="ElvinCDs_Config_HelpFontString" text="Whether to display spells icons on windows">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_IconsStr" relativePoint="BOTTOMLEFT" x="0" y="-5" />
+								<Anchors point="RIGHT" x="-265" />
+							</Anchors>
+						</FontString>
+
+						<FontString name="$parent_StrictStr" inherits="ElvinCDs_Config_FontString" text="Strict Mode">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_IconsHelp" relativePoint="BOTTOMLEFT" x="0" y="-6" />
+								<Anchors point="RIGHT" x="-265" />
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_StrictHelp" inherits="ElvinCDs_Config_HelpFontString" text="Ignore offliners and groups 6-8 or 3-8 depending on the raid difficulty">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_StrictStr" relativePoint="BOTTOMLEFT" x="0" y="-5" />
+								<Anchors point="RIGHT" x="-265" />
+							</Anchors>
+						</FontString>
+
+						<FontString name="$parent_AnnounceStr" inherits="ElvinCDs_Config_FontString" text="Use Raid Chat/warnings">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_StrictHelp" relativePoint="BOTTOMLEFT" x="0" y="-6" />
+								<Anchors point="RIGHT" x="-265" />
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_AnnounceHelp" inherits="ElvinCDs_Config_HelpFontString" text="Whether to use raid chat/warnings in addition to whispers">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_AnnounceStr" relativePoint="BOTTOMLEFT" x="0" y="-5" />
+								<Anchors point="RIGHT" x="-265" />
+							</Anchors>
+						</FontString>
+
+						<FontString name="$parent_ShoutStr" inherits="ElvinCDs_Config_FontString" text="Announce Spell Casting">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_AnnounceHelp" relativePoint="BOTTOMLEFT" x="0" y="-6" />
+								<Anchors point="RIGHT" x="-265" />
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_ShoutHelp" inherits="ElvinCDs_Config_HelpFontString" text="Whether to announced tracked spells to raid/party members">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_ShoutStr" relativePoint="BOTTOMLEFT" x="0" y="-5" />
+								<Anchors point="RIGHT" x="-265" />
+							</Anchors>
+						</FontString>
+
+						<FontString name="$parent_VerboseStr" inherits="ElvinCDs_Config_FontString" text="Verbose Mode">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_ShoutHelp" relativePoint="BOTTOMLEFT" x="0" y="-6" />
+								<Anchors point="RIGHT" x="-265" />
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_VerboseHelp" inherits="ElvinCDs_Config_HelpFontString" text="Enables/Disables on-screen and chat window alerts">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_VerboseStr" relativePoint="BOTTOMLEFT" x="0" y="-5" />
+								<Anchors point="RIGHT" x="-265" />
+							</Anchors>
+						</FontString>
+
+						<FontString name="$parent_LockedStr" inherits="ElvinCDs_Config_FontString" text="Lock Windows">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_VerboseHelp" relativePoint="BOTTOMLEFT" x="0" y="-6" />
+								<Anchors point="RIGHT" x="-265" />
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_LockedHelp" inherits="ElvinCDs_Config_HelpFontString" text="Locks/Unlocks spells windows">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_LockedStr" relativePoint="BOTTOMLEFT" x="0" y="-5" />
+								<Anchors point="RIGHT" x="-265" />
+							</Anchors>
+						</FontString>
+
+						<FontString name="$parent_SyncStr" inherits="ElvinCDs_Config_FontString" text="AddOn Synchronization">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_LockedHelp" relativePoint="BOTTOMLEFT" x="0" y="-6" />
+								<Anchors point="RIGHT" x="-265" />
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_SyncHelp" inherits="ElvinCDs_Config_HelpFontString" text="Synchronize with other people using the addon">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_SyncStr" relativePoint="BOTTOMLEFT" x="0" y="-5" />
+								<Anchors point="RIGHT" x="-265" />
+							</Anchors>
+						</FontString>
+
+						<FontString name="$parent_ShowInBGStr" inherits="ElvinCDs_Config_FontString" text="Show In Battlegrounds">
+							<Anchors>
+								<Anchor point="LEFT" relativeTo="$parent_EnabledStr" relativePoint="RIGHT" x="35" y="0" />
+								<Anchors point="RIGHT" x="-20" />
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_ShowInBGHelp" inherits="ElvinCDs_Config_HelpFontString" text="Show when you are in a battleground">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_ShowInBGStr" relativePoint="BOTTOMLEFT" x="0" y="-5" />
+								<Anchors point="RIGHT" x="-20" />
+							</Anchors>
+						</FontString>
+
+						<FontString name="$parent_ShowInRaidStr" inherits="ElvinCDs_Config_FontString" text="Show In Raids">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_ShowInBGHelp" relativePoint="BOTTOMLEFT" x="0" y="-6" />
+								<Anchors point="RIGHT" x="-20" />
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_ShowInRaidHelp" inherits="ElvinCDs_Config_HelpFontString" text="Show when you are in a raid">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_ShowInRaidStr" relativePoint="BOTTOMLEFT" x="0" y="-5" />
+								<Anchors point="RIGHT" x="-20" />
+							</Anchors>
+						</FontString>
+
+						<FontString name="$parent_ShowInPartyStr" inherits="ElvinCDs_Config_FontString" text="Show In Party">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_ShowInRaidHelp" relativePoint="BOTTOMLEFT" x="0" y="-6" />
+								<Anchors point="RIGHT" x="-20" />
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_ShowInPartyHelp" inherits="ElvinCDs_Config_HelpFontString" text="Show when you are in a party group">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_ShowInPartyStr" relativePoint="BOTTOMLEFT" x="0" y="-5" />
+								<Anchors point="RIGHT" x="-20" />
+							</Anchors>
+						</FontString>
+
+						<FontString name="$parent_ShowWhenSoloStr" inherits="ElvinCDs_Config_FontString" text="Show when solo">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_ShowInPartyHelp" relativePoint="BOTTOMLEFT" x="0" y="-6" />
+								<Anchors point="RIGHT" x="-20" />
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_ShowWhenSoloHelp" inherits="ElvinCDs_Config_HelpFontString" text="Enable this if you want to use the addon when on your own">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent_ShowWhenSoloStr" relativePoint="BOTTOMLEFT" x="0" y="-5" />
+								<Anchors point="RIGHT" x="-20" />
+							</Anchors>
+						</FontString>
+
+					</Layer>
+				</Layers>
+				<Frames>
+					<CheckButton name="$parent_enabled" inherits="ElvinCDs_Config_CheckButton">
+						<Size x="25" y="25" />
+						<Anchors>
+							<Anchor point="TOPRIGHT" relativeTo="$parent_EnabledStr" relativePoint="TOPLEFT" x="-3" y="1" />
+						</Anchors>
+					</CheckButton>
+					<CheckButton name="$parent_icons" inherits="ElvinCDs_Config_CheckButton">
+						<Size x="25" y="25" />
+						<Anchors>
+							<Anchor point="TOPRIGHT" relativeTo="$parent_IconsStr" relativePoint="TOPLEFT" x="-3" y="1" />
+						</Anchors>
+					</CheckButton>
+					<CheckButton name="$parent_strict" inherits="ElvinCDs_Config_CheckButton">
+						<Size x="25" y="25" />
+						<Anchors>
+							<Anchor point="TOPRIGHT" relativeTo="$parent_StrictStr" relativePoint="TOPLEFT" x="-3" y="1" />
+						</Anchors>
+					</CheckButton>
+					<CheckButton name="$parent_announce" inherits="ElvinCDs_Config_CheckButton">
+						<Size x="25" y="25" />
+						<Anchors>
+							<Anchor point="TOPRIGHT" relativeTo="$parent_AnnounceStr" relativePoint="TOPLEFT" x="-3" y="1" />
+						</Anchors>
+					</CheckButton>
+					<CheckButton name="$parent_shout" inherits="ElvinCDs_Config_CheckButton">
+						<Size x="25" y="25" />
+						<Anchors>
+							<Anchor point="TOPRIGHT" relativeTo="$parent_ShoutStr" relativePoint="TOPLEFT" x="-3" y="1" />
+						</Anchors>
+					</CheckButton>
+					<CheckButton name="$parent_verbose" inherits="ElvinCDs_Config_CheckButton">
+						<Size x="25" y="25" />
+						<Anchors>
+							<Anchor point="TOPRIGHT" relativeTo="$parent_VerboseStr" relativePoint="TOPLEFT" x="-3" y="1" />
+						</Anchors>
+					</CheckButton>
+					<CheckButton name="$parent_locked" inherits="ElvinCDs_Config_CheckButton">
+						<Size x="25" y="25" />
+						<Anchors>
+							<Anchor point="TOPRIGHT" relativeTo="$parent_LockedStr" relativePoint="TOPLEFT" x="-3" y="1" />
+						</Anchors>
+					</CheckButton>
+					<CheckButton name="$parent_sync" inherits="ElvinCDs_Config_CheckButton">
+						<Size x="25" y="25" />
+						<Anchors>
+							<Anchor point="TOPRIGHT" relativeTo="$parent_SyncStr" relativePoint="TOPLEFT" x="-3" y="1" />
+						</Anchors>
+					</CheckButton>
+					<CheckButton name="$parent_showInBG" inherits="ElvinCDs_Config_CheckButton">
+						<Size x="25" y="25" />
+						<Anchors>
+							<Anchor point="TOPRIGHT" relativeTo="$parent_ShowInBGStr" relativePoint="TOPLEFT" x="-3" y="1" />
+						</Anchors>
+					</CheckButton>
+					<CheckButton name="$parent_showInRaid" inherits="ElvinCDs_Config_CheckButton">
+						<Size x="25" y="25" />
+						<Anchors>
+							<Anchor point="TOPRIGHT" relativeTo="$parent_ShowInRaidStr" relativePoint="TOPLEFT" x="-3" y="1" />
+						</Anchors>
+					</CheckButton>
+					<CheckButton name="$parent_showInParty" inherits="ElvinCDs_Config_CheckButton">
+						<Size x="25" y="25" />
+						<Anchors>
+							<Anchor point="TOPRIGHT" relativeTo="$parent_ShowInPartyStr" relativePoint="TOPLEFT" x="-3" y="1" />
+						</Anchors>
+					</CheckButton>
+					<CheckButton name="$parent_showWhenSolo" inherits="ElvinCDs_Config_CheckButton">
+						<Size x="25" y="25" />
+						<Anchors>
+							<Anchor point="TOPRIGHT" relativeTo="$parent_ShowWhenSoloStr" relativePoint="TOPLEFT" x="-3" y="1" />
+						</Anchors>
+					</CheckButton>
+
+					<Slider name="$parent_spacing" inherits="OptionsSliderTemplate" minValue="0" maxValue="20" defaultValue="1" valueStep="1">
+						<Size x="180" y="15" />
+						<Anchors>
+							<Anchor point="BOTTOMRIGHT" x="-30" y="55" />
+						</Anchors>
+						<Scripts>
+							<OnLoad>
+								getglobal(self:GetName() .. "Low"):SetText("0")
+								getglobal(self:GetName() .. "High"):SetText("20")
+								getglobal(self:GetName() .. "Text"):SetText("Bars Spacing")
+							</OnLoad>
+							<OnValueChanged>ElvinCDs.Config.General:onClick(self)</OnValueChanged>
+						</Scripts>
+					</Slider>
+
+					<Slider name="$parent_opacity" inherits="OptionsSliderTemplate" minValue="0" maxValue="100" defaultValue="75" valueStep="1">
+						<Size x="180" y="15" />
+						<Anchors>
+							<Anchor point="BOTTOMLEFT" relativeTo="$parent_spacing" relativePoint="TOPLEFT" x="0" y="15" />
+						</Anchors>
+						<Scripts>
+							<OnLoad>
+								getglobal(self:GetName() .. "Low"):SetText("0")
+								getglobal(self:GetName() .. "High"):SetText("100")
+								getglobal(self:GetName() .. "Text"):SetText("Bars Opacity")
+							</OnLoad>
+							<OnValueChanged>ElvinCDs.Config.General:onClick(self)</OnValueChanged>
+						</Scripts>
+					</Slider>
+
+					<Slider name="$parent_height" inherits="OptionsSliderTemplate" minValue="16" maxValue="48" defaultValue="20" valueStep="1">
+						<Size x="180" y="15" />
+						<Anchors>
+							<Anchor point="BOTTOMLEFT" relativeTo="$parent_opacity" relativePoint="TOPLEFT" x="0" y="15" />
+						</Anchors>
+						<Scripts>
+							<OnLoad>
+								getglobal(self:GetName() .. "Low"):SetText("16")
+								getglobal(self:GetName() .. "High"):SetText("48")
+								getglobal(self:GetName() .. "Text"):SetText("Bars Height")
+							</OnLoad>
+							<OnValueChanged>ElvinCDs.Config.General:onClick(self)</OnValueChanged>
+						</Scripts>
+					</Slider>
+
+					<Slider name="$parent_width" inherits="OptionsSliderTemplate" minValue="50" maxValue="400" defaultValue="20" valueStep="1">
+						<Size x="180" y="15" />
+						<Anchors>
+							<Anchor point="BOTTOMLEFT" relativeTo="$parent_height" relativePoint="TOPLEFT" x="0" y="15" />
+						</Anchors>
+						<Scripts>
+							<OnLoad>
+								getglobal(self:GetName() .. "Low"):SetText("50")
+								getglobal(self:GetName() .. "High"):SetText("400")
+								getglobal(self:GetName() .. "Text"):SetText("Bars Width")
+							</OnLoad>
+							<OnValueChanged>ElvinCDs.Config.General:onClick(self)</OnValueChanged>
+						</Scripts>
+					</Slider>
+
+					<Button name="$parentDefault" inherits="ElvinCDs_ButtonTemplate" text="DEFAULTS">
+						<Size x="65" y="25" />
+						<Anchors>
+							<Anchor point="TOPRIGHT" relativeTo="$parent_spacing" relativePoint="BOTTOMRIGHT" x="0" y="-15" />
+						</Anchors>
+						<Scripts><OnClick>ElvinCDs:defaults()</OnClick></Scripts>
+					</Button>
+				</Frames>
+
+				<Scripts><OnLoad>ElvinCDs.Config.General:onLoad(self)</OnLoad></Scripts>
+			</Frame>
+
+			<!-- Manage Spells Frame -->
+			<Frame name="ElvinCDs_Config_Spells" hidden="true">
+				<Anchors>
+					<Anchor point="TOPLEFT" />
+					<Anchor point="BOTTOMRIGHT" />
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentNote" justifyH="LEFT" inherits="GameFontHighlightSmall" text="">
+							<Anchors>
+								<Anchor point="TOPLEFT" x="20" y="-270" />
+								<Anchor point="BOTTOMRIGHT" x="-15" y="15" />
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Frames>
+					<!-- Spells List -->
+					<Frame name="$parentList">
+						<Size x="100" y="100" />
+						<Anchors>
+							<Anchor point="TOPLEFT" x="15" y="-40" />
+							<Anchor point="BOTTOMRIGHT" x="-35" y="75" />
+						</Anchors>
+						<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
+							<TileSize><AbsValue val="16" /></TileSize>
+							<EdgeSize><AbsValue val="16" /></EdgeSize>
+						</Backdrop>
+						<Frames>
+							<ScrollFrame name="$parentScrollFrame" inherits="ElvinCDs_ScrolLFrameTemplate">
+								<Anchors>
+									<Anchor point="TOPLEFT" x="4" y="-4" />
+									<Anchor point="BOTTOMRIGHT" x="-2" y="5" />
+								</Anchors>
+							</ScrollFrame>
+						</Frames>
+					</Frame>
+
+					<Button name="$parentHeaderSpellId" inherits="ElvinCDs_TableHeaderTemplate" text="Spell ID">
+						<Size x="50" y="19" />
+						<Anchors>
+							<Anchor point="BOTTOMLEFT" relativeTo="$parentList" relativePoint="TOPLEFT" x="0" y="0" />
+						</Anchors>
+						<Scripts><OnClick>ElvinCDs.Config.Spells:sort("id")</OnClick></Scripts>
+					</Button>
+
+					<Button name="$parentHeaderSpellName" inherits="ElvinCDs_TableHeaderTemplate" text="Spell Name">
+						<Size x="100" y="19" />
+						<Anchors>
+							<Anchor point="LEFT" relativeTo="$parentHeaderSpellId" relativePoint="RIGHT" x="5" y="0" />
+						</Anchors>
+						<Scripts><OnClick>ElvinCDs.Config.Spells:sort("name")</OnClick></Scripts>
+					</Button>
+
+					<Button name="$parentHeaderCooldown" inherits="ElvinCDs_TableHeaderTemplate" text="Cooldown">
+						<Size x="65" y="19" />
+						<Anchors>
+							<Anchor point="LEFT" relativeTo="$parentHeaderSpellName" relativePoint="RIGHT" x="5" y="0" />
+						</Anchors>
+						<Scripts><OnClick>ElvinCDs.Config.Spells:sort("cooldown")</OnClick></Scripts>
+					</Button>
+
+					<Button name="$parentHeaderDisplay" inherits="ElvinCDs_TableHeaderTemplate" text="Show">
+						<Size x="40" y="19" />
+						<Anchors>
+							<Anchor point="LEFT" relativeTo="$parentHeaderCooldown" relativePoint="RIGHT" x="0" y="0" />
+						</Anchors>
+					</Button>
+
+					<Button name="$parentHeaderTrack" inherits="ElvinCDs_TableHeaderTemplate" text="Track">
+						<Size x="40" y="19" />
+						<Anchors>
+							<Anchor point="LEFT" relativeTo="$parentHeaderDisplay" relativePoint="RIGHT" x="0" y="0" />
+						</Anchors>
+					</Button>
+
+					<Button name="$parentHeaderGroup" inherits="ElvinCDs_TableHeaderTemplate" text="Group">
+						<Size x="40" y="19" />
+						<Anchors>
+							<Anchor point="LEFT" relativeTo="$parentHeaderTrack" relativePoint="RIGHT" x="0" y="0" />
+						</Anchors>
+					</Button>
+
+					<Button name="$parentHeaderShout" inherits="ElvinCDs_TableHeaderTemplate" text="Shout">
+						<Size x="40" y="19" />
+						<Anchors>
+							<Anchor point="LEFT" relativeTo="$parentHeaderGroup" relativePoint="RIGHT" x="0" y="0" />
+						</Anchors>
+					</Button>
+
+					<Button name="$parentHeaderWhisper" inherits="ElvinCDs_TableHeaderTemplate" text="Whisper">
+						<Size x="40" y="19" />
+						<Anchors>
+							<Anchor point="LEFT" relativeTo="$parentHeaderShout" relativePoint="RIGHT" x="0" y="0" />
+						</Anchors>
+					</Button>
+
+					<Button name="$parentHeaderSpecial" inherits="ElvinCDs_TableHeaderTemplate" text="Special">
+						<Size x="55" y="19" />
+						<Anchors>
+							<Anchor point="LEFT" relativeTo="$parentHeaderWhisper" relativePoint="RIGHT" x="0" y="0" />
+						</Anchors>
+					</Button>
+
+					<EditBox name="$parentSpellId" inherits="ElvinCDs_EditBoxTemplate" letters="5" numeric="true">
+						<Size x="55" y="25" />
+						<Anchors>
+							<Anchor point="TOPLEFT" relativeTo="$parentList" relativePoint="BOTTOMLEFT" x="8" y="0" />
+						</Anchors>
+					</EditBox>
+					<EditBox name="$parentCooldown" inherits="ElvinCDs_EditBoxTemplate" letters="6" numeric="true">
+						<Size x="55" y="25" />
+						<Anchors>
+							<Anchor point="LEFT" relativeTo="$parentSpellId" relativePoint="RIGHT" x="100" y="0" />
+						</Anchors>
+					</EditBox>
+					<CheckButton name="$parentDisplay" inherits="ElvinCDs_Config_CheckButton">
+						<Size>
+							<AbsDimension x="20" y="20" />
+						</Size>
+						<Anchors>
+							<Anchor point="LEFT" relativeTo="$parentCooldown" relativePoint="RIGHT" x="18" y="0" />
+						</Anchors>
+					</CheckButton>
+					<CheckButton name="$parentTrack" inherits="ElvinCDs_Config_CheckButton">
+						<Size>
+							<AbsDimension x="20" y="20" />
+						</Size>
+						<Anchors>
+							<Anchor point="LEFT" relativeTo="$parentDisplay" relativePoint="RIGHT" x="18" y="0" />
+						</Anchors>
+					</CheckButton>
+					<CheckButton name="$parentGroup" inherits="ElvinCDs_Config_CheckButton">
+						<Size>
+							<AbsDimension x="20" y="20" />
+						</Size>
+						<Anchors>
+							<Anchor point="LEFT" relativeTo="$parentTrack" relativePoint="RIGHT" x="18" y="0" />
+						</Anchors>
+					</CheckButton>
+					<CheckButton name="$parentShout" inherits="ElvinCDs_Config_CheckButton">
+						<Size>
+							<AbsDimension x="20" y="20" />
+						</Size>
+						<Anchors>
+							<Anchor point="LEFT" relativeTo="$parentGroup" relativePoint="RIGHT" x="23" y="0" />
+						</Anchors>
+					</CheckButton>
+					<CheckButton name="$parentWhisper" inherits="ElvinCDs_Config_CheckButton">
+						<Size>
+							<AbsDimension x="20" y="20" />
+						</Size>
+						<Anchors>
+							<Anchor point="LEFT" relativeTo="$parentShout" relativePoint="RIGHT" x="23" y="0" />
+						</Anchors>
+					</CheckButton>
+					<CheckButton name="$parentSpecial" inherits="ElvinCDs_Config_CheckButton">
+						<Size>
+							<AbsDimension x="20" y="20" />
+						</Size>
+						<Anchors>
+							<Anchor point="LEFT" relativeTo="$parentWhisper" relativePoint="RIGHT" x="23" y="0" />
+						</Anchors>
+					</CheckButton>
+
+					<Button name="$parentSave" inherits="ElvinCDs_ButtonTemplate" text="SAVE">
+						<Size x="65" y="20" />
+						<Anchors>
+							<Anchor point="TOPLEFT" relativeTo="$parentSpellId" relativePoint="TOPRIGHT" x="5" y="0" />
+							<Anchor point="BOTTOMRIGHT" relativeTo="$parentCooldown" relativePoint="BOTTOMLEFT" x="-10" y="0" />
+						</Anchors>
+						<Scripts><OnClick>ElvinCDs.Config.Spells:save(self)</OnClick></Scripts>
+					</Button>
+				</Frames>
+				<Scripts><OnLoad>ElvinCDs.Config.Spells:onLoad(self)</OnLoad></Scripts>
+			</Frame>
+
+			<Button name="$parentClose" inherits="ElvinCDs_ButtonTemplate" text="CLOSE">
+				<Size x="65" y="25" />
+				<Anchors>
+					<Anchor point="TOPRIGHT" x="0" y="5" />
+				</Anchors>
+				<Scripts><OnClick>ElvinCDs.Config:hide()</OnClick></Scripts>
+			</Button>
+
+			<Button name="$parentTab1" inherits="CharacterFrameTabButtonTemplate" id="1" text="GENERAL">
+				<Anchors>
+					<Anchor point="CENTER" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="60" y="-12" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+					   PanelTemplates_SetTab(ElvinCDs_Config, 1);
+					   ElvinCDs_Config_General:Show();
+					   ElvinCDs_Config_Spells:Hide();
+				   </OnClick>
+				</Scripts>
+			</Button>
+			<Button name="$parentTab2" inherits="CharacterFrameTabButtonTemplate" id="2" text="Manage Spells">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentTab1" relativePoint="RIGHT">
+						<Offset>
+							<AbsDimension x="-16" y="0" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+					   PanelTemplates_SetTab(ElvinCDs_Config, 2);
+					   ElvinCDs_Config_General:Hide();
+					   ElvinCDs_Config_Spells:Show();
+				   </OnClick>
+				</Scripts>
+			</Button>
+		</Frames>
+		<Scripts>
+			<OnLoad>ElvinCDs.Config:onLoad(self)</OnLoad>
+			<OnDragStart>self:StartMoving()</OnDragStart>
+			<OnDragStop>self:StopMovingOrSizing()</OnDragStop>
+		</Scripts>
+	</Frame>
+</Ui>

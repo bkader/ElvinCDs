@@ -1,0 +1,15 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<!-- Locales: -->
+	<Script file="localization.en.lua" />
+	<!-- Spells database &  Utilities -->
+	<Script file="spells.lua" />
+	<Script file="utils.lua" />
+	<!-- Templates & Core File -->
+	<Include file="templates.xml" />
+	<Script file="core.lua" />
+	<!-- Config & Logs -->
+	<Include file="config.xml" />
+	<Include file="logs.xml" />
+	<!-- AddOn Tooltip -->
+	<GameTooltip name="ElvinCDs_Tooltip" inherits="GameTooltipTemplate" parent="UIParent" hidden="true" />
+</Ui>

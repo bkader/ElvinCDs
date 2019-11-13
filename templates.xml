@@ -1,0 +1,177 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+
+	<!-- Bars Template -->
+	<StatusBar name="ElvinCDs_BarTemplate" parent="$parent" movable="false" enableMouse="true" virtual="true">
+		<BarTexture file="Interface\TargetingFrame\UI-StatusBar" />
+		<Size x="150" y="18" />
+		<Anchors>
+			<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" x="0" y="0" />
+		</Anchors>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentBackground">
+					<Anchors>
+						<Anchor point="TOPLEFT" />
+						<Anchor point="BOTTOMRIGHT" />
+					</Anchors>
+					<Coloor r="0.5" g="0.5" b="0.5" a="1.0" />
+				</Texture>
+			</Layer>
+			<Layer level="OVERLAY">
+				<FontString name="$parentName" justifyH="LEFT" justifyV="MIDDLE" inherits="GameFontNormal" text="NAME">
+					<Size x="50" y="10" />
+					<Anchors>
+						<Anchor point="TOPLEFT" x="3" y="0" />
+						<Anchor point="BOTTOMRIGHT" x="-3" y="0" />
+					</Anchors>
+					<Color r="1" g="1" b="1" a="1" />
+				</FontString>
+				<FontString name="$parentTimer" justifyH="RIGHT" justifyV="MIDDLE" inherits="GameFontNormalSmall" text="Timer">
+					<Size x="50" y="5" />
+					<Anchors>
+						<anchor point="TOPLEFT" x="3" y="0" />
+						<Anchor point="BOTTOMRIGHT" x="-3" y="0" />
+					</Anchors>
+					<Color r="1" g="1" b="1" a="1" />
+				</FontString>
+			</Layer>
+		</Layers>
+	</StatusBar>
+
+	<!-- Windows Template -->
+	<Frame name="ElvinCDs_WindowTemplate" parent="$parent" movable="true" enableMouse="true" clampedToScreen="true" userPlaced="true" virtual="true" hidden="true">
+		<Size x="150" y="20" />
+		<Anchors><Anchor point="CENTER" /></Anchors>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentBackground" setAllPoints="true">
+					<Color r="0" g="0" b="0" a="0.5" />
+				</Texture>
+			</Layer>
+			<Layer point="ARTWORK">
+				<Texture name="$parentIcon" file="">
+					<Size x="20" y="20" />
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" x="0" y="0" />
+					</Anchors>
+					<TexCoords left="0.1" right="0.9" top="0.1" bottom="0.9" />
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Button name="$parentTitle" text="Title">
+				<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+					<TileSize><AbsValue val="1" /></TileSize>
+					<EdgeSize><AbsValue val="2" /></EdgeSize>
+					<BackgroundInsets>
+						<AbsInset top="1" right="1" bottom="1" left="1" />
+					</BackgroundInsets>
+				</Backdrop>
+				<NormalFont style="GameFontNormalSmall" />
+				<Size x="100" y="20" />
+				<Anchors>
+					<Anchor point="TOPLEFT" />
+					<Anchor point="RIGHT" relativeTo="$parentIcon" relativePoint="LEFT" x="0" />
+				</Anchors>
+				<ButtonText name="$parentText" justifyH="LEFT">
+					<Anchors>
+						<Anchor point="LEFT" x="8" y="0" />
+						<Anchor point="RIGHT" x="-8" y="0" />
+					</Anchors>
+				</ButtonText>
+				<Scripts><OnLoad>self:RegisterForClicks("AnyUp")</OnLoad></Scripts>
+			</Button>
+			<Frame name="$parentBars">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT" x="0" y="0" />
+					<Anchor point="BOTTOMRIGHT" />
+				</Anchors>
+			</Frame>
+		</Frames>
+	</Frame>
+
+	<!-- ScrollFrame template -->
+	<ScrollFrame name="ElvinCDs_ScrolLFrameTemplate" inherits="UIPanelScrollFrameTemplate" virtual="true">
+		<ScrollChild>
+			<Frame name="$parentScrollChild" setAllPoints="$parent">
+				<Anchors>
+					<Anchor point="TOPLEFT" />
+					<Anchor point="BOTTOMRIGHT" />
+				</Anchors>
+			</Frame>
+		</ScrollChild>
+	</ScrollFrame>
+
+	<!-- Default buttons template -->
+	<Button name="ElvinCDs_ButtonTemplate" virtual="true">
+		<Size><AbsDimension x="25" y="25" /></Size>
+		<NormalFont style="GameFontNormalSmall" />
+		<DisabledFont style="GameFontDisableSmall" />
+		<HighlightFont style="GameFontHighlightSmall" />
+		<ButtonText name="$parentText">
+			<Anchors>
+				<Anchor point="LEFT">
+					<Offset><AbsDimension x="5" y="0" /></Offset>
+				</Anchor>
+				<Anchor point="RIGHT">
+					<Offset><AbsDimension x="-5" y="0" /></Offset>
+				</Anchor>
+			</Anchors>
+		</ButtonText>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentLeft" file="Interface\Buttons\UI-Panel-Button-Up">
+					<Size><AbsDimension x="12" /></Size>
+					<Anchors>
+						<Anchor point="TOPLEFT" />
+						<Anchor point="BOTTOMLEFT" />
+					</Anchors>
+					<TexCoords left="0" right="0.09374" top="0" bottom="0.6875" />
+				</Texture>
+				<Texture name="$parentRight" file="Interface\Buttons\UI-Panel-Button-Up">
+					<Size><AbsDimension x="12" /></Size>
+					<Anchors>
+						<Anchor point="TOPRIGHT" />
+						<Anchor point="BOTTOMRIGHT" />
+					</Anchors>
+					<TexCoords left="0.53125" right="0.625" top="0" bottom="0.6875" />
+				</Texture>
+				<Texture name="$parentMiddle" file="Interface\Buttons\UI-Panel-Button-Up">
+					<Size><AbsDimension x="12" /></Size>
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset><AbsDimension x="12" y="0" /></Offset>
+						</Anchor>
+						<Anchor point="BOTTOMRIGHT">
+							<Offset><AbsDimension x="-12" y="0" /></Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0.09375" right="0.53125" top="0" bottom="0.6875" />
+				</Texture>
+			</Layer>
+		</Layers>
+		<HighlightTexture inherits="UIPanelButtonHighlightTexture" mod="ADD" />
+		<PushedTexture inherits="UIPanelButtonPushedTexture" mod="ADD" />
+		<DisabledTexture inherits="UIPanelButtonDisabledTexture" />
+		<Scripts><OnLoad>self:RegisterForClicks("AnyUp")</OnLoad></Scripts>
+	</Button>
+
+	<!-- EditBox Template -->
+    <EditBox name="ElvinCDs_EditBoxTemplate" inherits="InputBoxTemplate" autoFocus="false" letters="255" virtual="true">
+        <FontString inherits="GameFontHighlight" justifyH="CENTER" />
+        <Scripts><OnEscapePressed>self:ClearFocus()</OnEscapePressed></Scripts>
+    </EditBox>
+
+	<!-- Simple table header button template -->
+	<Button name="ElvinCDs_TableHeaderTemplate" virtual="true">
+		<Size><AbsDimension x="10" y="19" /></Size>
+		<ButtonText name="$parentText" justifyH="LEFT">
+			<Anchors>
+				<Anchor point="LEFT" x="5" y="0" />
+				<Anchor point="RIGHT" x="-5" y="0" />
+			</Anchors>
+		</ButtonText>
+		<NormalFont style="GameFontHighlightSmall" />
+		<HighlightFont style="GameFontNormalSmall" />
+	</Button>
+</Ui>
