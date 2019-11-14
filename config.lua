@@ -75,7 +75,7 @@ do
       _G[frameName..'_IconsHelp']:SetText(L['Whether to display spells icons on windows'])
 
       _G[frameName..'_StrictStr']:SetText(L['Strict Mode'])
-      _G[frameName..'_StrictHelp']:SetText(L['Ignore offliners and groups 6-8 or 3-8 depending on the raid difficulty'])
+      _G[frameName..'_StrictHelp']:SetText(L['Ignore groups 6-8 or 3-8 depending on the raid difficulty'])
 
       _G[frameName..'_AnnounceStr']:SetText(L['Use Raid Chat/warnings'])
       _G[frameName..'_AnnounceHelp']:SetText(L['Whether to use raid chat/warnings in addition to whispers'])
@@ -153,7 +153,7 @@ do
         value = (btn:GetChecked() == 1)
       end
       Elvin_Options[target] = value
-      utils.triggerEvent('ResetBars')
+      utils.triggerEvent(target == 'strict' and 'UpdateBars' or 'ResetBars')
     end
   end
 end
@@ -166,9 +166,10 @@ do
   local UIFrame, frameName
   local localized = false
 
-  local spells = {}
+  local spells, cached = {}, {}
   local loaded, fetched = false, false
   local selectedId, sortType
+  local searchForm
 
   local ascending = false
   local sortTypes = {
@@ -196,7 +197,7 @@ do
   local function localizeUIFrame()
     if localized then return end
 
-    -- if GAME_LOCALE ~= 'enUS' and GAME_LOCALE ~= 'enGB' then
+    if GAME_LOCALE ~= 'enUS' and GAME_LOCALE ~= 'enGB' then
       _G[frameName..'HeaderSpellId']:SetText(L['Spell ID'])
       _G[frameName..'HeaderSpellName']:SetText(L['Spell Name'])
       _G[frameName..'HeaderCooldown']:SetText(L['Cooldown'])
@@ -206,10 +207,7 @@ do
       _G[frameName..'HeaderShout']:SetText(L['Shout'])
       _G[frameName..'HeaderWhisper']:SetText(L['Whisper'])
       _G[frameName..'HeaderSpecial']:SetText(L['Special'])
-    -- end
-
-    -- Footer note:
-    _G[frameName..'Note']:SetText(L['|cff33ff99Tips:|r\nMake sure to reload your UI if you make changes to spells or encounter any problem.\nAdding a spell with an existing spell ID will overwrite it'])
+    end
 
     -- Set Headers Tooltips:
     utils.setTooltip(_G[frameName..'HeaderDisplay'], L['Shows/Hides the spell window'], nil, L['Show Window'])
@@ -219,19 +217,54 @@ do
     utils.setTooltip(_G[frameName..'HeaderWhisper'], L['Whether to whisper the player you casted the spell on'], nil, L['Send Whisper'])
     utils.setTooltip(_G[frameName..'HeaderSpecial'], L['A special spell is either spec or profession specific'], nil, L['Special Spell'])
 
+    searchForm = _G[frameName..'Search']
+    searchForm:SetText(SEARCH)
+    searchForm:SetScript('OnEditFocusGained', function(self)
+      local text = self:GetText():trim()
+      if text == SEARCH then self:SetText('') end
+    end)
+
+    searchForm:SetScript('OnEditFocusLost', function(self)
+      local text = self:GetText():trim()
+      if text == '' then self:SetText(SEARCH) end
+    end)
+
+    searchForm:SetScript('OnTextChanged', function(self)
+      local term = self:GetText():trim()
+      if term == '' or term == SEARCH then
+        spells = utils.deepCopy(cached)
+      else
+        spells = submod:search(term)
+        fetched = false
+      end
+    end)
+
+    searchForm:SetScript('OnEscapePressed', function(self)
+      self:SetText(SEARCH)
+      self:ClearFocus()
+      spells = cached
+      loaded, fetched = false, false
+    end)
+    searchForm:SetScript('OnEnterPressed', function(self)
+      self:ClearFocus()
+      loaded, fetched = false, false
+    end)
+
     localized = true
   end
 
   local function loadSpells()
-    spells = {}
+    cached = {}
     for k, v in pairs(addon.spellInfo) do
       local spell = utils.deepCopy(v)
       spell.spellId = k
-      table.insert(spells, spell)
+      spell.spellName = select(1, GetSpellInfo(k))
+      table.insert(cached, spell)
     end
     if sortType and sortTypes[sortType] then
-      table.sort(spells, sortTypes[sortType])
+      table.sort(cached, sortTypes[sortType])
     end
+    loaded, fetched = true, false
   end
 
   local fetchSpells
@@ -247,6 +280,7 @@ do
     end
 
     function fetchSpells()
+      if #spells == 0 then spells = utils.deepCopy(cached) end
       resetSpellsList()
 
       local scrollFrame = _G[frameName..'ListScrollFrame']
@@ -262,8 +296,6 @@ do
         btn:SetID(k)
         btn:Show()
 
-        local spellName, _, spellIcon = GetSpellInfo(v.spellId)
-
         -- Spell Details:
         _G[btnName..'SpellId']:SetText(v.spellId)
         _G[btnName..'Cooldown']:SetText((v.cooldown and v.cooldown > 0) and utils.sec2clock(v.cooldown) or '')
@@ -275,7 +307,7 @@ do
         _G[btnName..'Special']:SetChecked(v.talent)
 
         local name = _G[btnName..'SpellName']
-        name:SetText(spellName)
+        name:SetText(v.spellName)
         name:SetScript('OnEnter', function(self)
           local spellLink = GetSpellLink(v.spellId)
           GameTooltip_SetDefaultAnchor(ElvinCDs_Tooltip, btn)
@@ -302,6 +334,19 @@ do
     end
   end
 
+  function submod:search(term)
+    local found = {}
+    for i, s in ipairs(cached) do
+      for k, v in pairs(s) do
+        if (k == 'spellName' and string.find(v:lower(), term:lower())) or (k == 'spellId' and string.find(tostring(v), term)) then
+          table.insert(found, s)
+          break
+        end
+      end
+    end
+    return (#found > 0) and found or utils.deepCopy(cached)
+  end
+
   local function updateUIFrame(self, elapsed)
     localizeUIFrame()
     if utils.update(self, frameName, 0.05, elapsed) then
@@ -310,15 +355,13 @@ do
 
       for k, v in ipairs(spells) do
         local btn = _G[frameName..'_SpellBtn_'..k]
-        if not btn.hovered then
+        if btn and not btn.hovered then
           utils.highlight(btn, (selectedId and selectedId == v.spellId))
         end
       end
 
       local tempId, tempCd = _G[frameName..'SpellId']:GetNumber(), _G[frameName..'Cooldown']:GetNumber()
       local isAdd = (tempId ~= 0 or tempCd ~= 0)
-
-      utils.setText(_G[frameName..'Save'], ADD, SAVE, isAdd)
       utils.enableDisable(_G[frameName..'Save'], isAdd)
     end
   end
@@ -363,27 +406,33 @@ do
 
     if what == 'show' then
       info.hidden = not value
+      spells[id].hidden = not value
       success = true
     elseif what == 'track' then
       info.track = value
+      spells[id].track = value
       success = true
     elseif what == 'group' then
       info.group = value
+      spells[id].group = value
       success = true
     elseif what == 'shout' then
       info.shout = value
+      spells[id].shout = value
       success = true
     elseif what == 'whisper' then
       info.whisper = value
+      spells[id].whisper = value
       success = true
     elseif what == 'talent' then
       info.talent = value
+      spells[id].talent = value
       success = true
     end
 
     if success then
       Elvin_Spells[spellId] = info
-      utils.triggerEvent('UpdateBars')
+      utils.triggerEvent('ResetBars')
       loaded, fetched = false, false
     end
   end

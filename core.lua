@@ -40,8 +40,14 @@ local food = {
 
 local syncHandlers, whisperSyncHandlers = {}, {}
 
+local function removeWindows()
+  for name, _ in pairs(windows) do
+    utils.hide(_G[name])
+  end
+end
 
 local function initializeCooldowns()
+  removeWindows()
   -- We add spells info:
   for _, spells in pairs(classSpells) do
     for k, v in pairs(spells) do
@@ -50,9 +56,8 @@ local function initializeCooldowns()
   end
   for k, v in pairs(Elvin_Spells) do
     spellInfo[k] = spellInfo[k] or {}
-    utils.fillTable(spellInfo[k], v)
+    spellInfo[k] = table.merge(spellInfo[k], v)
   end
-  -- utils.fillTable(spellInfo, Elvin_Spells)
   addon.spellInfo = spellInfo
 
   -- Add the list of spells to track and/or announce
@@ -72,6 +77,8 @@ local function initializeCooldowns()
     local name = select(1, GetSpellInfo(k))
     if name then cooldownsNames[name] = k end
   end
+
+  updateRoster = true
 end
 
 local function addSpellCooldown(spellId)
@@ -102,6 +109,14 @@ local function addPlayerCooldown(name, class, talent)
   end
 end
 
+local function removePlayerCooldown(name)
+  if cooldowns then
+    for k, v in pairs(cooldowns) do
+      v.players[name] = nil
+      utils.hide(_G['ElvinCDs_'..tostring(k)..'_'..name])
+    end
+  end
+end
 
 local function checkGroupStatus()
   if UnitAffectingCombat('player') then
@@ -132,7 +147,7 @@ local function checkGroupStatus()
       for i = 1, num do
         local name, _, subgroup, _, _, class = GetRaidRosterInfo(i)
         if name and ((size == 25 and subgroup > 5) or (size == 10 and subgroup > 2)) then
-          removePlayerCooldown(name, class)
+          removePlayerCooldown(name)
           utils.removeEntry(members, name)
           if composition[subgroup] then composition[subgroup] = nil end
         end
@@ -170,14 +185,6 @@ local function checkGroupStatus()
   end
 
   updateRoster = false
-end
-
-
-
-local function removeWindows()
-  for name, _ in pairs(windows) do
-    utils.hide(_G[name])
-  end
 end
 
 local function createWindow(spellId, wName)
@@ -269,6 +276,13 @@ local function createWindow(spellId, wName)
     end
   end)
 
+  utils.setTooltip(title, {
+    L['Left-click to move (in unlocked)'],
+    L['Middle-Click to lock/unlock windows'],
+    L['Right-Click to hide window'],
+    L['Alt+Left-click to access spell log']
+  }, nil, L['Tips'])
+
   window.bars = {}
   for n, p in pairs(cooldown.players) do
     local unitId = utils.getPlayerUnitId(n)
@@ -300,7 +314,7 @@ local function loadCooldowns()
     or (groupType == 'RAID' and not options.showInRaid)
     or (groupType == 'PARTY' and not options.showInParty)
     or (groupType == 'SOLO' and not options.showWhenSolo) then
-    loaded = true
+    loaded, fetched = true, false
     return
   end
 
@@ -312,7 +326,7 @@ local function loadCooldowns()
       utils.showHide(window.frame, (not window.hidden and #window.bars > 0))
     end
   end
-  loaded = true
+  loaded, fetched = true, false
 end
 
 local function fetchCooldowns()
@@ -346,6 +360,7 @@ local function fetchCooldowns()
           timer:SetFont('Fonts\\ARIALN.ttf', options.height*0.6)
           name:SetTextColor(1.0, 1.0, 1.0, options.opacity*1.5)
           timer:SetTextColor(1.0, 1.0, 1.0, options.opacity*1.5)
+          _G[b.name..'Icon']:SetSize(options.height*0.67, options.height*0.67)
 
           -- Add the update function:
           bar:SetScript('OnUpdate', function(self, elapsed)
@@ -393,7 +408,16 @@ function onUpdateBar(spellId, player, elapsed)
   -- Is the player dead?
   local isDead = UnitIsDeadOrGhost(unitId)
   local r, g, b
-  if isDead then r, g, b = 0.58, 0.58, 0.58 end
+  if isDead then r, g, b = 0.12, 0.12, 0.12 end
+
+  local icon = GetRaidTargetIndex(unitId)
+  if icon and not isDead then
+    _G[barName..'Icon']:SetTexture('Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_'..icon)
+    _G[barName..'Icon']:Show()
+  else
+    _G[barName..'Icon']:SetTexture('Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_8')
+    utils.showHide(_G[barName..'Icon'], isDead)
+  end
 
   if utils.update(bar, barName, 1, elapsed) then
 
@@ -626,7 +650,8 @@ do
       opacity=0.65,
       width=150,
       height=18,
-      spacing=1
+      spacing=0,
+      default=true
     }
     addon.defaultOptions = defaultOptions
   end
@@ -687,7 +712,6 @@ do
     if event == 'PLAYER_ENTERING_WORLD' then
       self:UnregisterEvent('PLAYER_ENTERING_WORLD')
       initializeCooldowns()
-      updateRoster = true
       return
     end
 
@@ -781,10 +805,7 @@ mainFrame:SetScript('OnUpdate', function(self, elapsed)
     if updateRoster then checkGroupStatus() end
 
     -- Load & Fetch
-    if not loaded then
-      fetched = false
-      loadCooldowns()
-    end
+    if not loaded then loadCooldowns() end
     if not fetched then
       fetchCooldowns()
       updateInterval = 0.5

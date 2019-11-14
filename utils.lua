@@ -17,6 +17,28 @@ function mod.fillTable(t1, t2)
     end
   end
 end
+--
+-- Adds the key-value associations from one table into another
+-- and returns the resulting merged table.
+--
+function table.merge(...)
+  local result = {}
+  local arg = {...}
+  for _, t in ipairs(arg) do
+    if type(t) == 'table' then
+      for k,v in pairs(t) do
+        if type(result[k]) == 'table' and type(v) == 'table' then
+          result[k] = table.merge(result[k], v)
+        else
+          result[k] = v
+        end
+      end
+    else
+      error('invalid value')
+    end
+  end
+  return result
+end
 
 -- DeepCopy:
 function mod.deepCopy(src)

@@ -1,4 +1,6 @@
-<Ui xmlns="http://www.blizzard.com/wow/ui/">
+<Ui xmlns="http://www.blizzard.com/wow/ui/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
 
 	<!-- Bars Template -->
 	<StatusBar name="ElvinCDs_BarTemplate" parent="$parent" movable="false" enableMouse="true" virtual="true">
@@ -17,7 +19,7 @@
 					<Coloor r="0.5" g="0.5" b="0.5" a="1.0" />
 				</Texture>
 			</Layer>
-			<Layer level="OVERLAY">
+			<Layer level="ARTWORK">
 				<FontString name="$parentName" justifyH="LEFT" justifyV="MIDDLE" inherits="GameFontNormal" text="NAME">
 					<Size x="50" y="10" />
 					<Anchors>
@@ -34,6 +36,14 @@
 					</Anchors>
 					<Color r="1" g="1" b="1" a="1" />
 				</FontString>
+			</Layer>
+			<Layer level="OVERLAY">
+				<Texture name="$parentIcon" file="Interface\TARGETINGFRAME\UI-RaidTargetingIcon_8">
+					<Size x="12" y="12" />
+					<Anchors>
+						<Anchor point="CENTER" />
+					</Anchors>
+				</Texture>
 			</Layer>
 		</Layers>
 	</StatusBar>
