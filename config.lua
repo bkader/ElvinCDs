@@ -4,6 +4,8 @@ local L = addon.L
 local GAME_LOCALE = GetLocale()
 local mod = {General = {}, Spells = {}}
 
+local _G = _G
+
 --------------------------------------------------------------------------------
 --> Main Frame:
 do
@@ -34,11 +36,11 @@ do
 
     -- Tab Configuration:
     PanelTemplates_SetNumTabs(frame, 2)
-    PanelTemplates_SetTab(frame, 1)
+    PanelTemplates_SetTab(frame, 2)
     frame:SetScript('OnShow', function(self)
       PlaySound('UChatScrollButton')
-      _G[frameName..'_General']:Show()
-      _G[frameName..'_Spells']:Hide()
+      _G[frameName..'_General']:Hide()
+      _G[frameName..'_Spells']:Show()
     end)
     frame:SetScript('OnHide', function(self)
       PlaySound('UChatScrollButton')
@@ -99,7 +101,7 @@ do
       _G[frameName..'_ShowInRaidHelp']:SetText(L['Show when you are in a raid'])
 
       _G[frameName..'_ShowInPartyStr']:SetText(L['Show In Party'])
-      _G[frameName..'_ShowInPartyHelp']:SetText(L['Show when you are in a party group'])
+      _G[frameName..'_ShowInPartyHelp']:SetText(L['Show when you are in a party blind'])
 
       _G[frameName..'_ShowWhenSoloStr']:SetText(L['Show when solo'])
       _G[frameName..'_ShowWhenSoloHelp']:SetText(L['Enable this if you want to use the addon when on your own'])
@@ -169,7 +171,11 @@ do
   local spells, cached = {}, {}
   local loaded, fetched = false, false
   local selectedId, sortType
-  local searchForm
+  local searchForm, defaults
+
+  local showCustom = false
+  local defaultColor = _G.NORMAL_FONT_COLOR
+  local customColor = {r = 0.2, g = 1.0, b = 0.6}
 
   local ascending = false
   local sortTypes = {
@@ -194,68 +200,24 @@ do
   local _G = _G
   local GetSpellInfo = _G.GetSpellInfo
 
-  local function localizeUIFrame()
-    if localized then return end
-
-    if GAME_LOCALE ~= 'enUS' and GAME_LOCALE ~= 'enGB' then
-      _G[frameName..'HeaderSpellId']:SetText(L['Spell ID'])
-      _G[frameName..'HeaderSpellName']:SetText(L['Spell Name'])
-      _G[frameName..'HeaderCooldown']:SetText(L['Cooldown'])
-      _G[frameName..'HeaderDisplay']:SetText(L['Show'])
-      _G[frameName..'HeaderTrack']:SetText(L['Track'])
-      _G[frameName..'HeaderGroup']:SetText(L['Group'])
-      _G[frameName..'HeaderShout']:SetText(L['Shout'])
-      _G[frameName..'HeaderWhisper']:SetText(L['Whisper'])
-      _G[frameName..'HeaderSpecial']:SetText(L['Special'])
-    end
-
-    -- Set Headers Tooltips:
-    utils.setTooltip(_G[frameName..'HeaderDisplay'], L['Shows/Hides the spell window'], nil, L['Show Window'])
-    utils.setTooltip(_G[frameName..'HeaderTrack'], L['Whether to track the spell'], nil, L['Track Spell'])
-    utils.setTooltip(_G[frameName..'HeaderGroup'], L['A blind spell has no specific target.'], nil, L['Group Spell'])
-    utils.setTooltip(_G[frameName..'HeaderShout'], L['Announce the spell to group. Only works for spells you cast'], nil, L['Announce Spell'])
-    utils.setTooltip(_G[frameName..'HeaderWhisper'], L['Whether to whisper the player you casted the spell on'], nil, L['Send Whisper'])
-    utils.setTooltip(_G[frameName..'HeaderSpecial'], L['A special spell is either spec or profession specific'], nil, L['Special Spell'])
-
-    searchForm = _G[frameName..'Search']
-    searchForm:SetText(SEARCH)
-    searchForm:SetScript('OnEditFocusGained', function(self)
-      local text = self:GetText():trim()
-      if text == SEARCH then self:SetText('') end
-    end)
-
-    searchForm:SetScript('OnEditFocusLost', function(self)
-      local text = self:GetText():trim()
-      if text == '' then self:SetText(SEARCH) end
-    end)
-
-    searchForm:SetScript('OnTextChanged', function(self)
-      local term = self:GetText():trim()
-      if term == '' or term == SEARCH then
-        spells = utils.deepCopy(cached)
-      else
-        spells = submod:search(term)
-        fetched = false
-      end
-    end)
-
-    searchForm:SetScript('OnEscapePressed', function(self)
-      self:SetText(SEARCH)
-      self:ClearFocus()
-      spells = cached
-      loaded, fetched = false, false
-    end)
-    searchForm:SetScript('OnEnterPressed', function(self)
-      self:ClearFocus()
-      loaded, fetched = false, false
-    end)
-
-    localized = true
+  local function clearEditBoxes()
+    -- Clear all data:
+    _G[frameName..'SpellId']:SetText('')
+    _G[frameName..'SpellId']:ClearFocus()
+    _G[frameName..'Cooldown']:SetText('')
+    _G[frameName..'Cooldown']:ClearFocus()
+    _G[frameName..'Display']:SetChecked(false)
+    _G[frameName..'Track']:SetChecked(false)
+    _G[frameName..'Blind']:SetChecked(false)
+    _G[frameName..'Shout']:SetChecked(false)
+    _G[frameName..'Special']:SetChecked(false)
+    _G[frameName..'Display']:SetChecked(false)
   end
 
   local function loadSpells()
     cached = {}
-    for k, v in pairs(addon.spellInfo) do
+    local list = showCustom and Elvin_Spells or addon.spellInfo
+    for k, v in pairs(list) do
       local spell = utils.deepCopy(v)
       spell.spellId = k
       spell.spellName = select(1, GetSpellInfo(k))
@@ -301,7 +263,7 @@ do
         _G[btnName..'Cooldown']:SetText((v.cooldown and v.cooldown > 0) and utils.sec2clock(v.cooldown) or '')
         _G[btnName..'Display']:SetChecked(not v.hidden)
         _G[btnName..'Track']:SetChecked(v.track)
-        _G[btnName..'Group']:SetChecked(v.group)
+        _G[btnName..'Blind']:SetChecked(v.blind)
         _G[btnName..'Shout']:SetChecked(v.shout)
         _G[btnName..'Whisper']:SetChecked(v.whisper)
         _G[btnName..'Special']:SetChecked(v.talent)
@@ -321,9 +283,16 @@ do
           btn:UnlockHighlight()
           btn.hovered = false
         end)
-        name:SetScript('OnClick', function(self)
-          selectedId = (v.spellId ~= selectedId) and v.spellId or nil
+        name:SetScript('OnClick', function(self, button)
+          return submod:onClick(self:GetParent(), button)
         end)
+
+        -- Color spell's name if is default:
+        if Elvin_Spells[v.spellId] then
+          _G[btnName..'SpellNameText']:SetTextColor(customColor.r, customColor.g, customColor.b)
+        else
+          _G[btnName..'SpellNameText']:SetTextColor(defaultColor.r, defaultColor.g, defaultColor.b)
+        end
 
         btn:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 0, -height)
         btn:SetPoint('RIGHT', scrollChild, 'RIGHT', 0, 0)
@@ -334,17 +303,117 @@ do
     end
   end
 
-  function submod:search(term)
-    local found = {}
-    for i, s in ipairs(cached) do
-      for k, v in pairs(s) do
-        if (k == 'spellName' and string.find(v:lower(), term:lower())) or (k == 'spellId' and string.find(tostring(v), term)) then
-          table.insert(found, s)
-          break
-        end
-      end
+  local function localizeUIFrame()
+    if localized then return end
+
+    if GAME_LOCALE ~= 'enUS' and GAME_LOCALE ~= 'enGB' then
+      _G[frameName..'HeaderSpellId']:SetText(L['Spell ID'])
+      _G[frameName..'HeaderSpellName']:SetText(L['Spell Name'])
+      _G[frameName..'HeaderCooldown']:SetText(L['Cooldown'])
+      _G[frameName..'HeaderDisplay']:SetText(L['Show'])
+      _G[frameName..'HeaderTrack']:SetText(L['Track'])
+      _G[frameName..'HeaderBlind']:SetText(L['Blind'])
+      _G[frameName..'HeaderShout']:SetText(L['Shout'])
+      _G[frameName..'HeaderWhisper']:SetText(L['Whisper'])
+      _G[frameName..'HeaderSpecial']:SetText(L['Special'])
     end
-    return (#found > 0) and found or utils.deepCopy(cached)
+
+    -- Set Help Tooltips:
+    utils.setTooltip(_G[frameName..'Search'], L['You can search for a spell by its ID, its name or by its cooldown (seconds).'], nil, L['Search'])
+
+    utils.setTooltip(_G[frameName..'HeaderCooldown'], L['Spells with no cooldown are instant-casted spells.'], nil, L['Spell Cooldown'])
+    utils.setTooltip(_G[frameName..'Cooldown'], L['Spells with no cooldown are instant-casted spells.'], nil, L['Spell Cooldown'])
+
+    utils.setTooltip(_G[frameName..'HeaderDisplay'], {
+      L['Whether to show the spell window.'],
+      L['In order to be shown, the spell needs to be tracked.']
+    }, nil, L['Show Window'])
+    utils.setTooltip(_G[frameName..'Display'], {
+      L['Whether to show the spell window.'],
+      L['In order to be shown, the spell needs to be tracked.']
+    }, nil, L['Show Window'])
+
+    utils.setTooltip(_G[frameName..'HeaderTrack'], {
+      L['Check this if you want to track the spell.'],
+      L['If checked, the addon will track the spell even if it is not shown and will thus log its usage.']
+    }, nil, L['Track Spell'])
+    utils.setTooltip(_G[frameName..'Track'], {
+      L['Check this if you want to track the spell.'],
+      L['If checked, the addon will track the spell even if it is not shown and will thus log its usage.']
+    }, nil, L['Track Spell'])
+
+    utils.setTooltip(_G[frameName..'HeaderBlind'], L['A blind spell has no specific target or it is a spell that the player can only cast on himself/herself or on a group.'], nil, L['Blind Spell'])
+    utils.setTooltip(_G[frameName..'Blind'], L['A blind spell has no specific target or it is a spell that the player can only cast on himself/herself or on a group.'], nil, L['Blind Spell'])
+
+    utils.setTooltip(_G[frameName..'HeaderShout'], L['Announce the spell to the group. Only works for spells you cast.'], nil, L['Announce Spell'])
+    utils.setTooltip(_G[frameName..'Shout'], L['Announce the spell to the group. Only works for spells you cast.'], nil, L['Announce Spell'])
+
+    utils.setTooltip(_G[frameName..'HeaderWhisper'], L['Whether to whisper the player you casted the spell on.'], nil, L['Send Whisper'])
+    utils.setTooltip(_G[frameName..'Whisper'], L['Whether to whisper the player you casted the spell on.'], nil, L['Send Whisper'])
+
+    utils.setTooltip(_G[frameName..'HeaderSpecial'], L['Special spells are available for certain specs (talent-specific) or professions.'], nil, L['Special Spell'])
+    utils.setTooltip(_G[frameName..'Special'], L['Special spells are available for certain specs (talent-specific) or professions.'], nil, L['Special Spell'])
+
+    searchForm = _G[frameName..'Search']
+    searchForm:SetText(SEARCH)
+    searchForm:SetScript('OnEditFocusGained', function(self)
+      local text = self:GetText():trim()
+      if text == SEARCH then self:SetText('') end
+    end)
+
+    searchForm:SetScript('OnEditFocusLost', function(self)
+      local text = self:GetText():trim()
+      if text == '' then self:SetText(SEARCH) end
+    end)
+
+    searchForm:SetScript('OnTextChanged', function(self)
+      local term = self:GetText():trim()
+      if term == '' or term == SEARCH then
+        spells = utils.deepCopy(cached)
+      else
+        spells = submod:search(term)
+        fetched = false
+      end
+    end)
+
+    searchForm:SetScript('OnEscapePressed', function(self)
+      self:SetText(SEARCH)
+      self:ClearFocus()
+      spells = cached
+      loaded, fetched = false, false
+    end)
+    searchForm:SetScript('OnEnterPressed', function(self)
+      self:ClearFocus()
+      loaded, fetched = false, false
+    end)
+
+    -- Defaults check button:
+    defaults = _G[frameName..'Defaults']
+    defaults:SetScript('OnClick', function(self)
+      addon.options.default = (self:GetChecked() == 1)
+      utils.triggerEvent('UpdateBars')
+      utils.triggerEvent('ReloadSpells')
+    end)
+    utils.setTooltip(defaults, {
+      L['Check this if you want to use default provided spells in addition of yours.'],
+      L['Modifying any default spell will automatically add it to your custom spells list.']
+    }, nil, L['Default Spells'])
+
+    _G[frameName..'SpellId']:SetScript('OnEscapePressed', function()
+      clearEditBoxes()
+    end)
+    _G[frameName..'Cooldown']:SetScript('OnEscapePressed', function()
+      clearEditBoxes()
+    end)
+
+    local custom = _G[frameName..'Custom']
+    utils.setTooltip(custom, L['Check this to show your custom spells.'], nil, L['Filter Spells'])
+    custom:SetScript('OnClick', function(self)
+      showCustom = (self:GetChecked() == 1)
+      utils.triggerEvent('ReloadSpells')
+    end)
+
+    localized = true
   end
 
   local function updateUIFrame(self, elapsed)
@@ -363,7 +432,24 @@ do
       local tempId, tempCd = _G[frameName..'SpellId']:GetNumber(), _G[frameName..'Cooldown']:GetNumber()
       local isAdd = (tempId ~= 0 or tempCd ~= 0)
       utils.enableDisable(_G[frameName..'Save'], isAdd)
+
+      defaults:SetChecked(addon.options.default)
     end
+  end
+
+  function submod:search(term)
+    local found = {}
+    for i, s in ipairs(cached) do
+      for k, v in pairs(s) do
+        if (k == 'spellName' and string.find(v:lower(), term:lower()))
+          or (k == 'spellId' and string.find(tostring(v), term))
+          or (k == 'cooldown' and string.find(tostring(v), term)) then
+          table.insert(found, s)
+          break
+        end
+      end
+    end
+    return (#found > 0) and found or utils.deepCopy(cached)
   end
 
   function submod:onLoad(frame)
@@ -373,12 +459,73 @@ do
     frame:SetScript('OnUpdate', updateUIFrame)
   end
 
-  function submod:onClick(btn)
-    if not btn then return end
-    local id = btn:GetID()
-    if not id or not spells[id] then return end
-    local spellId = spells[id].spellId
-    selectedId = (spellId ~= selectedId) and spellId or nil
+  do
+    local menuFrame
+
+    local function openMenu(btn, spellId)
+      if not btn or not spellId then return end
+      if not menuFrame then
+        menuFrame = CreateFrame('Frame', 'ElvinCDs_SpellMenu', UIParent, 'UIDropDownMenuTemplate')
+      end
+
+      local menuItems = {
+        {
+          text = 'Edit',
+          notCheckable = true,
+          func = function()
+            local spell = addon.spellInfo[spellId]
+            if not spell then return end
+            _G[frameName..'SpellId']:SetNumber(spellId)
+            _G[frameName..'Cooldown']:SetNumber(spell.cooldown)
+            _G[frameName..'Display']:SetChecked(not spell.hidden)
+            _G[frameName..'Track']:SetChecked(spell.track)
+            _G[frameName..'Blind']:SetChecked(spell.blind)
+            _G[frameName..'Shout']:SetChecked(spell.shout)
+            _G[frameName..'Whisper']:SetChecked(spell.whisper)
+            _G[frameName..'Special']:SetChecked(spell.talent)
+            _G[frameName..'SpellId']:SetFocus()
+          end
+        },
+        {
+          text = DELETE,
+          notCheckable = true,
+          func = function()
+            local spellName = select(1, GetSpellInfo(spellId))
+            StaticPopup_Show('ELVINCDS_CONFIRM_DELETE', spellName, nil, spellId)
+          end
+        }
+      }
+
+      EasyMenu(menuItems, menuFrame, 'cursor', 0, 0, 'MENU')
+    end
+
+    StaticPopupDialogs['ELVINCDS_CONFIRM_DELETE'] = {
+      text         = L['Are you sure you want to delete %s from your custom spells list?'],
+      button1      = YES,
+      button2      = CANCEL,
+      timeout      = 0,
+      whileDead    = 1,
+      hideOnEscape = 1,
+      cancels      = 'ELVINCDS_CONFIRM_DELETE',
+      OnAccept     = function(self, spellId)
+        if spellId and Elvin_Spells[spellId] then
+          Elvin_Spells[spellId] = nil
+          utils.triggerEvent('UpdateBars')
+          utils.triggerEvent('ReloadSpells')
+        end
+      end
+    }
+
+    function submod:onClick(btn, button)
+      if not btn then return end
+      local id = btn:GetID()
+      if not id or not spells[id] then return end
+      local spellId = spells[id].spellId
+      selectedId = (spellId ~= selectedId) and spellId or nil
+      if button == 'RightButton' and Elvin_Spells[spellId] then
+        openMenu(btn, spellId)
+      end
+    end
   end
 
   function submod:sort(t)
@@ -412,9 +559,9 @@ do
       info.track = value
       spells[id].track = value
       success = true
-    elseif what == 'group' then
-      info.group = value
-      spells[id].group = value
+    elseif what == 'blind' then
+      info.blind = value
+      spells[id].blind = value
       success = true
     elseif what == 'shout' then
       info.shout = value
@@ -435,11 +582,6 @@ do
       utils.triggerEvent('ResetBars')
       loaded, fetched = false, false
     end
-  end
-
-  function submod:reset(ld)
-    if ld then loaded = false end
-    fetched = false
   end
 
   function submod:save(btn)
@@ -468,7 +610,7 @@ do
     -- CheckButtons --
     ------------------
     local track   = (_G[frameName..'Track']:GetChecked() == 1)
-    local group   = (_G[frameName..'Group']:GetChecked() == 1)
+    local blind   = (_G[frameName..'Blind']:GetChecked() == 1)
     local shout   = (_G[frameName..'Shout']:GetChecked() == 1)
     local whisper = (_G[frameName..'Whisper']:GetChecked() == 1)
     local talent  = (_G[frameName..'Special']:GetChecked() == 1)
@@ -482,7 +624,7 @@ do
     Elvin_Spells[spellId] = {
       cooldown = cooldown,
       track = track,
-      group = group,
+      blind = blind,
       shout = shout,
       whisper = whisper,
       talent = talent
@@ -493,22 +635,18 @@ do
       Elvin_Cooldowns[spellId] = {players = {}}
     end
 
-    -- Clear all data:
-    _G[frameName..'SpellId']:SetText('')
-    _G[frameName..'SpellId']:ClearFocus()
-    _G[frameName..'Cooldown']:SetText('')
-    _G[frameName..'Cooldown']:ClearFocus()
-    _G[frameName..'Display']:SetChecked(false)
-    _G[frameName..'Track']:SetChecked(false)
-    _G[frameName..'Group']:SetChecked(false)
-    _G[frameName..'Shout']:SetChecked(false)
-    _G[frameName..'Special']:SetChecked(false)
-    _G[frameName..'Display']:SetChecked(false)
+    clearEditBoxes()
 
-    utils.printSuccess(L:F('New spell added: %s', spellLink))
+    local msg = addon.spells[spellId] and 'Existing spell modified: %s' or 'New spell added: %s'
+    utils.printSuccess(L:F(msg, spellLink))
     utils.triggerEvent('UpdateBars')
     loaded, fetched = false, false
   end
+
+  utils.registerCallback('ReloadSpells', function()
+    spells = table.wipe(spells or {})
+    loaded = false
+  end)
 end
 
 

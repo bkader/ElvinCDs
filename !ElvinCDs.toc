@@ -5,5 +5,4 @@
 ## Version: 0.1b
 ## DefaultState: enabled
 ## SavedVariables: Elvin_Options, Elvin_Spells, Elvin_Cooldowns
-# SavedVariables: Elvin_DB
 Load.xml

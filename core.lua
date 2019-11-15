@@ -49,10 +49,14 @@ end
 local function initializeCooldowns()
   removeWindows()
   -- We add spells info:
-  for _, spells in pairs(classSpells) do
-    for k, v in pairs(spells) do
-      spellInfo[k] = v
+  if options.default then
+    for _, spells in pairs(classSpells) do
+      for k, v in pairs(spells) do
+        spellInfo[k] = v
+      end
     end
+  else
+    spellInfo = table.wipe(spellInfo or {})
   end
   for k, v in pairs(Elvin_Spells) do
     spellInfo[k] = spellInfo[k] or {}
@@ -286,7 +290,7 @@ local function createWindow(spellId, wName)
   window.bars = {}
   for n, p in pairs(cooldown.players) do
     local unitId = utils.getPlayerUnitId(n)
-    if unitId ~= 'none' and UnitIsConnected(unitId) then
+    -- if unitId ~= 'none' and UnitIsConnected(unitId) then
       local bName = wName..'_'..n
       local bar = {
         name     = bName,
@@ -300,7 +304,7 @@ local function createWindow(spellId, wName)
         player   = n,
         target   = p.target
       })
-    end
+    -- end
   end
 
   return #window.bars > 0 and window or nil
@@ -463,7 +467,7 @@ do
 
     -- Create the menu frame:
     if not menuFrame then
-      menuFrame = CreateFrame('Frame', 'ElvinCDs_Menu', UIParent, 'UIDropDownMenuTemplate')
+      menuFrame = CreateFrame('Frame', 'ElvinCDs_CooldownMenu', UIParent, 'UIDropDownMenuTemplate')
     end
 
     -- Holds all menu elements:
@@ -541,7 +545,7 @@ do
 
     if IsControlKeyDown() then
       local spellName = GetSpellLink(spellId) or GetSpellInfo(spellId)
-      if spell.group then
+      if spell.blind then
         addon:shout(L:F('%s use %s now!', self.player, spellName))
         addon:whisper(self.player, L:F('Please use %s now', spellName))
       else
@@ -549,7 +553,7 @@ do
         addon:whisper(self.player, L:F('Please use %s on me', spellName))
       end
     else
-      openMenu(self, spellId, spell.group)
+      openMenu(self, spellId, spell.blind)
     end
   end
 end
@@ -659,7 +663,9 @@ do
   -- Loads addon's default options:
   function addon:defaults()
     for k, v in pairs(defaultOptions) do
-      Elvin_Options[k] = v
+      if k ~= 'default' then -- Ignore default spells!
+        Elvin_Options[k] = v
+      end
     end
   end
 
@@ -739,7 +745,7 @@ do
 
       -- Is the spell to be announced?
       if announced[spellName] then
-        if spell.group or (target ~= '' and target == player) then
+        if spell.blind or (target ~= '' and target == player) then
           addon:shout(L:F('Casting %s', spellLink), 'RAID')
         else
           addon:shout(L:F('Casting %s on %s', spellLink, target), 'RAID')
