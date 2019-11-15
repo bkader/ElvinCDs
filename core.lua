@@ -290,7 +290,7 @@ local function createWindow(spellId, wName)
   window.bars = {}
   for n, p in pairs(cooldown.players) do
     local unitId = utils.getPlayerUnitId(n)
-    -- if unitId ~= 'none' and UnitIsConnected(unitId) then
+    if unitId ~= 'none' and UnitIsConnected(unitId) then
       local bName = wName..'_'..n
       local bar = {
         name     = bName,
@@ -304,7 +304,7 @@ local function createWindow(spellId, wName)
         player   = n,
         target   = p.target
       })
-    -- end
+    end
   end
 
   return #window.bars > 0 and window or nil
@@ -938,13 +938,23 @@ do
       local status = options.sync and '|cff00ff00ON|r' or '|cffff0000OFF|r'
       utils.print(L['AddOn Synchronization'], status)
     elseif command == 'reset' then
-      for k, v in pairs(Elvin_Cooldowns) do
-        for n, p in pairs(v.players) do
-          p.logs = table.wipe(p.logs or {})
+      local cmd, other = match(rest, "^(%S*)%s*(.-)$")
+      local passed, msg = false
+      if cmd == 'all' then
+        Elvin_Cooldowns = table.wipe(Elvin_Cooldowns or {})
+        passed = true
+        msg = L['Cooldowns successfully reset']
+      elseif cmd == 'log' or cmd == 'logs' then
+        for k, v in pairs(Elvin_Cooldowns) do
+          for n, p in pairs(v.players) do
+            p.logs = table.wipe(p.logs or {})
+          end
         end
+        passed = true
+        msg = L['Cooldowns logs successfully reset']
       end
-      utils.triggerEvent('UpdateBars')
-      utils.print(L['Cooldowns successfully reset'])
+      if passed then utils.triggerEvent('UpdateBars') end
+      if msg then utils.print(msg) end
     elseif command == 'help' then
       utils.print(L:F('Acceptable commands for |cff33ff99/elvin|r:'))
       print(L:F(helpString, 'enable', L['Enables cooldown tracking']))
@@ -955,7 +965,8 @@ do
       print(L:F(helpString, 'shout', L['Enables/Disables spell casting announcements']))
       print(L:F(helpString, 'verbose', L['Enables/Disables on-screen and chat window alerts']))
       print(L:F(helpString, 'lock', L['Locks/Unlocks spells windows']))
-      print(L:F(helpString, 'reset', L['Resets all spells logs']))
+      print(L:F(helpString, 'reset all', L['Resets all spells cooldowns']))
+      print(L:F(helpString, 'reset logs', L['Resets all spells logs']))
       print(L:F(helpString, 'sync', L['Enables/Disabled addon synchronization']))
     elseif command == 'config' or command == 'options' or command == '' then
       addon.Config:toggle()
