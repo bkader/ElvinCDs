@@ -14,9 +14,9 @@ do
 
   local function localizeUIFrame()
     if localized then return end
-    -- if GAME_LOCALE ~= 'enUS' and GAME_LOCALE ~= 'enGB' then
+    if GAME_LOCALE ~= 'enUS' and GAME_LOCALE ~= 'enGB' then
       _G[frameName..'Tab2']:SetText(L['Manage Spells'])
-    -- end
+    end
     localized = true
   end
 
@@ -36,11 +36,11 @@ do
 
     -- Tab Configuration:
     PanelTemplates_SetNumTabs(frame, 2)
-    PanelTemplates_SetTab(frame, 2)
+    PanelTemplates_SetTab(frame, 1)
     frame:SetScript('OnShow', function(self)
       PlaySound('UChatScrollButton')
-      _G[frameName..'_General']:Hide()
-      _G[frameName..'_Spells']:Show()
+      _G[frameName..'_General']:Show()
+      _G[frameName..'_Spells']:Hide()
     end)
     frame:SetScript('OnHide', function(self)
       PlaySound('UChatScrollButton')
@@ -69,7 +69,7 @@ do
 
   local function localizeUIFrame()
     if localized then return end
-    -- if GAME_LOCALE ~= 'enUS' and GAME_LOCALE ~= 'enGB' then
+    if GAME_LOCALE ~= 'enUS' and GAME_LOCALE ~= 'enGB' then
       _G[frameName..'_EnabledStr']:SetText(L['Enable AddOn'])
       _G[frameName..'_EnabledHelp']:SetText(L['Whether to enable cooldowns tracking'])
 
@@ -105,7 +105,7 @@ do
 
       _G[frameName..'_ShowWhenSoloStr']:SetText(L['Show when solo'])
       _G[frameName..'_ShowWhenSoloHelp']:SetText(L['Enable this if you want to use the addon when on your own'])
-    -- end
+    end
     localized = true
   end
 

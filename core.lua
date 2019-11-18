@@ -529,7 +529,20 @@ do
     if not spell then return end
 
     -- Make sure the bar isn't on cooldown:
-    if _G[self.name].ticking then return end
+    if _G[self.name].ticking then
+      if IsControlKeyDown() then
+        local spellName = GetSpellLink(spellId) or GetSpellInfo(spellId)
+        local timeDiff = currentTime - (self.castTime or 0)
+        local timeTick = spell.cooldown - timeDiff
+        if timeTick < 0 then timeTick = 0 end
+        if timeTick > 0 then
+          addon:shout(L:F('%s available for %s in %s', spellName, self.player, utils.sec2clock(timeTick)), 'RAID')
+        else
+          addon:shout(L:F('%s is available for %s', spellName, self.player), 'RAID')
+        end
+      end
+      return
+    end
 
     -- Stop if it's my own:
     if self.player == unitName then return end
