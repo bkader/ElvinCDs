@@ -113,7 +113,7 @@ local spells = {
 
   ----------------------------------------------------------------
   SHAMAN = {
-    [16190] = {cooldown = 300, track = true, hidden = true, shout = true, blind = true}, -- Mana Tides Totem
+    [16190] = {cooldown = 300, talent =true, track = true, hidden = true, shout = true, blind = true}, -- Mana Tides Totem
     [20608] = {cooldown = 1800, track = true, hidden = true, blind = true}, -- Reincarnation
     [2894]  = {cooldown = 600, blind = true}, -- Fire ELemental Totem
     [30823] = {cooldown = 60, talent = true, blind = true}, -- Shamanistic Rage
