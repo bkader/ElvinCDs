@@ -9,3 +9,7 @@ After downloading the files, make sure to create the folder **..\Interface\AddOn
 Enable it then do **/elvin** in the game to access configuration panel.
 
 Type in the chat window **/elvin help** for more available commands.
+
+## Show Love & Support
+
+Though it's not required, **PayPal**/**Paysera** donations are most welcome at **bkader[at]mail.com**.

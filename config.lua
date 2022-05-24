@@ -34,6 +34,10 @@ do
     tinsert(UISpecialFrames, frameName)
     frame:SetScript('OnUpdate', updateUIFrame)
 
+    frame:SetResizable(true)
+    frame:SetMinResize(520, 325)
+    frame:SetMaxResize(1040, 650)
+
     -- Tab Configuration:
     PanelTemplates_SetNumTabs(frame, 2)
     PanelTemplates_SetTab(frame, 1)
@@ -54,6 +58,16 @@ do
 
   function mod:hide()
     utils.hide(UIFrame)
+  end
+
+  function mod:StartSizing()
+    if not UIFrame then return end
+    UIFrame:StartSizing()
+  end
+
+  function mod:StopSizing()
+    if not UIFrame then return end
+    UIFrame:StopMovingOrSizing()
   end
 end
 

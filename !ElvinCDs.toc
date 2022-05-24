@@ -1,8 +1,12 @@
 ## Interface: 30300
 ## Title: !|cffff7d0aElvin|r|cff33ff99Cooldowns|r
 ## Notes: A custom raid cooldowns tracker made for |cffFF7D0AElvinae|r from |cff996019Warmane|r-Icecrown.
-## Author: Kader "Earwin" B
-## Version: 0.1b
+## Author: Kader (|cff808080bkader#6361|r)
+## Version: 0.4b
 ## DefaultState: enabled
 ## SavedVariables: Elvin_Options, Elvin_Spells, Elvin_Cooldowns
+## X-Date: 2022-05-24 @ 09:45 PM |cff808080UTC|r
+## X-License: MIT/X
+## X-Email: bkader@mail.com
+## X-Website: https://github.com/bkader/ElvinCDs
 Load.xml

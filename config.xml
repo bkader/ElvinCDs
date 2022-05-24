@@ -733,6 +733,18 @@
 				   </OnClick>
 				</Scripts>
 			</Button>
+			<Button name="$parentResize">
+				<Size x="16" y="16" />
+				<Anchors>
+					<Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOMRIGHT" x="-12" y="10" />
+				</Anchors>
+				<NormalTexture file="Interface\CHATFRAME\UI-ChatIM-SizeGrabber-Up" />
+				<HighlightTexture file="Interface\CHATFRAME\UI-ChatIM-SizeGrabber-Up" alphaMode="ADD" />
+				<Scripts>
+					<OnMouseDown>ElvinCDs.Config:StartSizing(self, button)</OnMouseDown>
+					<OnMouseUp>ElvinCDs.Config:StopSizing(self, button)</OnMouseUp>
+				</Scripts>
+			</Button>
 		</Frames>
 		<Scripts>
 			<OnLoad>ElvinCDs.Config:onLoad(self)</OnLoad>
